@@ -39,8 +39,31 @@ public class EmpleadoController {
     @GET
     @Path("/obtenerPorId/{Id}")
     @Produces(MediaType.APPLICATION_JSON) //tipo de respuesta
-    public void Obtener(@PathParam("Id") int id) throws IOException {
+    public String Obtener(@PathParam("Id") String id) throws IOException {
+        empleado = guardarArchivoEnArray();
+        String contenido = "";
+        for (Empleado le : empleado) {
 
+            if (le.getIdEmpresarial().equals(id)) {
+
+                contenido = "edad;" + le.getEdad() + ";\n"
+                        + "idEmpresarial;" + le.getIdEmpresarial() + ";\n"
+                        + "cedula;" + le.getCedula() + ";\n"
+                        + "nombre;" + le.getNombre() + ";\n"
+                        + "segundo nombre;" + le.getSegundoNombre() + ";\n"
+                        + "apellido;" + le.getApellido() + ";\n"
+                        + "segundo apellido;" + le.getSegundoApellido() + ";\n"
+                        + "cargo;" + le.getCargo() + ";\n"
+                        + "area;" + le.getArea() + ";\n";
+
+                empleado.clear();
+                return contenido;
+            } else {
+                contenido = "No Registros";
+            }
+        }
+        empleado.clear();
+        return contenido;
     }
 
     @GET
@@ -97,9 +120,7 @@ public class EmpleadoController {
     @Consumes(MediaType.APPLICATION_JSON)   //tipo de consumo(cuerpo JSON)
     //@Produces(MediaType.APPLICATION_JSON)   //tipo de respuesta
     public void EditarEmpleado(String nombre) {
-        System.out.println(nombre + " con edad de: " + 22);
-        System.out.println("Editado correctamente");
-        
+
     }
 
     @DELETE
@@ -180,7 +201,7 @@ public class EmpleadoController {
                 System.out.println(e);
             }
         }
-        
+
         empleado.clear();
     }
 
