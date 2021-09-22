@@ -13,37 +13,37 @@ import java.io.Serializable;
  */
 public class Empleado implements Serializable {
 
-    short edad;
+    int edad;
     String idEmpresarial;
     String cedula;
     String nombre;
     String segundoNombre;
-    String Apellido;
+    String apellido;
     String segundoApellido;
-    String Cargo;
-    String Area;
+    String cargo;
+    String area;
 
     public Empleado() {
     }
     
 
-    public Empleado(short edad, String idEmpresarial, String cedula, String nombre, String segundoNombre, String Apellido, String segundoApellido, String Cargo, String Area) {
+    public Empleado(int edad, String idEmpresarial, String cedula, String nombre, String segundoNombre, String apellido, String segundoApellido, String cargo, String area) {
         this.edad = edad;
         this.idEmpresarial = idEmpresarial;
         this.cedula = cedula;
         this.nombre = nombre;
         this.segundoNombre = segundoNombre;
-        this.Apellido = Apellido;
+        this.apellido = apellido;
         this.segundoApellido = segundoApellido;
-        this.Cargo = Cargo;
-        this.Area = Area;
+        this.cargo = cargo;
+        this.area = area;
     }
 
-    public short getEdad() {
+    public int getEdad() {
         return edad;
     }
 
-    public void setEdad(short edad) {
+    public void setEdad(int edad) {
         this.edad = edad;
     }
 
@@ -80,11 +80,11 @@ public class Empleado implements Serializable {
     }
 
     public String getApellido() {
-        return Apellido;
+        return apellido;
     }
 
     public void setApellido(String Apellido) {
-        this.Apellido = Apellido;
+        this.apellido = Apellido;
     }
 
     public String getSegundoApellido() {
@@ -96,18 +96,18 @@ public class Empleado implements Serializable {
     }
 
     public String getCargo() {
-        return Cargo;
+        return cargo;
     }
 
     public void setCargo(String Cargo) {
-        this.Cargo = Cargo;
+        this.cargo = Cargo;
     }
 
     public String getArea() {
-        return Area;
+        return area;
     }
 
     public void setArea(String Area) {
-        this.Area = Area;
+        this.area = Area;
     }
 }

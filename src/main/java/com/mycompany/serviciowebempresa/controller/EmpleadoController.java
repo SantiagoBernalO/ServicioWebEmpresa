@@ -19,6 +19,7 @@ import javafx.scene.media.Media;
 import javax.ejb.Stateless;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 /**
  *
@@ -33,37 +34,13 @@ public class EmpleadoController {
     BufferedWriter bw;
     PrintWriter pw;
 
+    private static ArrayList<Empleado> empleado = new ArrayList<>();
+
     @GET
     @Path("/obtenerPorId/{Id}")
     @Produces(MediaType.APPLICATION_JSON) //tipo de respuesta
     public void Obtener(@PathParam("Id") int id) throws IOException {
-        String direccion = "C:\\Users\\asant\\OneDrive\\Escritorio\\resultados.txt";
-        try {
-            String bfReader;
-            BufferedReader lector = new BufferedReader(new FileReader(direccion));
-            while ((bfReader = lector.readLine()) != null) {
-                String[] partes;
-                partes = bfReader.split(",");
-                System.out.println(bfReader);
-            }
-            lector.close();
-        } catch (Exception e) {
-            System.out.println("Fichero no encontrado");
-        }
 
-        /*f = new File("C:\\Users\\asant\\OneDrive\\Escritorio\\resultados.txt");
-        w = new FileWriter(f);
-        bw = new BufferedWriter(w);
-        pw = new PrintWriter(bw);
-
-        pw.write("Esta es la id: " + id);
-
-        pw.close();
-        bw.close();
-
-        int[] vector = {1, 2, 3, id};
-
-        return vector;*/
     }
 
     @GET
@@ -75,13 +52,14 @@ public class EmpleadoController {
         int c;
         try {
             FileReader fr = new FileReader(direccion);
-            
+
             c = fr.read();
-            while (c!=-1) {
-                contenido+=(char)c;
-                c=fr.read();
+            while (c != -1) {
+                contenido += (char) c;
+                c = fr.read();
             }
-            
+            fr.close();
+
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -96,19 +74,19 @@ public class EmpleadoController {
 
         try {
             FileWriter fw = new FileWriter(direccion, true);
-            
-            fw.write("\n[;idEmpresarial: " + datosEmpleado.getIdEmpresarial() + ";\n"
-                + "edad: " + datosEmpleado.getEdad() + ";\n"
-                + "cedula: " + datosEmpleado.getCedula() + ";\n"
-                + "nombre: " + datosEmpleado.getNombre() + ";\n"
-                + "segundo nombre: " + datosEmpleado.getSegundoNombre() + ";\n"
-                + "Apellido: " + datosEmpleado.getApellido() + ";\n"
-                + "segundo apellido: " + datosEmpleado.getSegundoApellido() + ";\n"
-                + "cargo: " + datosEmpleado.getCargo() + ";\n"
-                + "area: " + datosEmpleado.getArea() + ";]\n;");
-            
+
+            fw.write("edad;" + datosEmpleado.getEdad() + ";\n"
+                    + "idEmpresarial;" + datosEmpleado.getIdEmpresarial() + ";\n"
+                    + "cedula;" + datosEmpleado.getCedula() + ";\n"
+                    + "nombre;" + datosEmpleado.getNombre() + ";\n"
+                    + "segundo nombre;" + datosEmpleado.getSegundoNombre() + ";\n"
+                    + "apellido;" + datosEmpleado.getApellido() + ";\n"
+                    + "segundo apellido;" + datosEmpleado.getSegundoApellido() + ";\n"
+                    + "cargo;" + datosEmpleado.getCargo() + ";\n"
+                    + "area;" + datosEmpleado.getArea() + ";\n");
+
             fw.close();
-            
+
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -121,42 +99,89 @@ public class EmpleadoController {
     public void EditarEmpleado(String nombre) {
         System.out.println(nombre + " con edad de: " + 22);
         System.out.println("Editado correctamente");
+        
     }
 
     @DELETE
     @Path("/eliminarPorId/{id}")
     @Produces(MediaType.APPLICATION_JSON)   //tipo de respuesta
-    public void eliminarEmpleado(@PathParam("id") int id) {
+    public Response eliminarEmpleado(@PathParam("id") String id) throws IOException {
+        String direccion = "C:\\Users\\asant\\OneDrive\\Escritorio\\resultados.txt";
+
         //1.guardar todo en una lista
+        empleado = guardarArchivoEnArray();
+
+        //2.buscar si existe el que se va a eliminar y eliminar del arreglo
+        for (Empleado le : empleado) {
+
+            if (le.getIdEmpresarial().equals(id)) {
+                //elimina
+                //System.out.println("se elimina a: " + le.getIdEmpresarial());
+                empleado.remove(le);
+                File archivo = new File(direccion);
+                archivo.delete();
+                NuevoArchivo(empleado);
+                return (Response.noContent().entity("Se elimino correctamente " + id).build());
+            }
+        }
+        return (Response.status(Response.Status.NOT_FOUND).build());
+    }
+
+    public ArrayList guardarArchivoEnArray() {
         String direccion = "C:\\Users\\asant\\OneDrive\\Escritorio\\resultados.txt";
         String contenido = "";
+        int contador = 0;
         int c;
         try {
             FileReader fr = new FileReader(direccion);
-            
+
             c = fr.read();
-            while (c!=-1) {
-                contenido+=(char)c;
-                c=fr.read();
+            while (c != -1) {
+                contenido += (char) c;
+                c = fr.read();
             }
-            
+
+            fr.close();
+
         } catch (Exception e) {
             System.out.println(e);
         }
         String vector[] = contenido.split(";");
-        
-        System.out.println(vector[10]);
-        //2.buscar el que se va a eliminar y eliminar del arreglo
-        int i = 0;
-        while(i<vector.length && vector[i]=="idEmpresarial: "+id){
-            
-            
-            
-            i++;
+
+        do {
+            empleado.add(new Empleado(Integer.parseInt(vector[contador + 1]), vector[contador + 3], vector[contador + 5], vector[contador + 7], vector[contador + 9], vector[contador + 11], vector[contador + 13], vector[contador + 15], vector[contador + 17]));
+            contador = contador + 18;
+        } while (contador < (vector.length) - 1);
+
+        return empleado;
+    }
+
+    public void NuevoArchivo(ArrayList<Empleado> datosEmpleado) throws IOException {
+        String direccion = "C:\\Users\\asant\\OneDrive\\Escritorio\\resultados.txt";
+
+        for (Empleado le : empleado) {
+
+            try {
+                FileWriter fw = new FileWriter(direccion, true);
+
+                fw.write("edad;" + le.getEdad() + ";\n"
+                        + "idEmpresarial;" + le.getIdEmpresarial() + ";\n"
+                        + "cedula;" + le.getCedula() + ";\n"
+                        + "nombre;" + le.getNombre() + ";\n"
+                        + "segundo nombre;" + le.getSegundoNombre() + ";\n"
+                        + "apellido;" + le.getApellido() + ";\n"
+                        + "segundo apellido;" + le.getSegundoApellido() + ";\n"
+                        + "cargo;" + le.getCargo() + ";\n"
+                        + "area;" + le.getArea() + ";\n");
+
+                fw.close();//PENDIENTE
+
+            } catch (Exception e) {
+                System.out.println(e);
+            }
         }
         
-        //2. eliminar fichero 
-        
-        //3. crear un nuevo fichero con el arreglo nuevo
+        empleado.clear();
     }
+
 }
