@@ -39,38 +39,75 @@ public class EmpleadoController {
     @GET
     @Path("/obtenerPorId/{Id}")
     @Produces(MediaType.APPLICATION_JSON) //tipo de respuesta
-    public String Obtener(@PathParam("Id") String id) throws IOException {
+    public Empleado Obtener(@PathParam("Id") String id) throws IOException {
         empleado = guardarArchivoEnArray();
         String contenido = "";
+        Empleado datos = new Empleado();
+
         for (Empleado le : empleado) {
 
             if (le.getIdEmpresarial().equals(id)) {
 
-                contenido = "edad;" + le.getEdad() + ";\n"
-                        + "idEmpresarial;" + le.getIdEmpresarial() + ";\n"
-                        + "cedula;" + le.getCedula() + ";\n"
-                        + "nombre;" + le.getNombre() + ";\n"
-                        + "segundo nombre;" + le.getSegundoNombre() + ";\n"
-                        + "apellido;" + le.getApellido() + ";\n"
-                        + "segundo apellido;" + le.getSegundoApellido() + ";\n"
-                        + "cargo;" + le.getCargo() + ";\n"
-                        + "area;" + le.getArea() + ";\n";
+                datos.setEdad(le.getEdad());
+                datos.setIdEmpresarial(le.getIdEmpresarial());
+                datos.setCedula(le.getCedula());
+                datos.setNombre(le.getNombre());
+                datos.setSegundoNombre(le.getSegundoNombre());
+                datos.setApellido(le.getApellido());
+                datos.setSegundoApellido(le.getSegundoApellido());
+                datos.setCargo(le.getCargo());
+                datos.setArea(le.getArea());
 
                 empleado.clear();
-                return contenido;
+                return datos;
             } else {
                 contenido = "No Registros";
             }
         }
         empleado.clear();
-        return contenido;
+        return datos;
     }
 
     @GET
     @Path("/obtenerGeneral")
     @Produces(MediaType.APPLICATION_JSON)   //tipo de respuesta
-    public String ObtenerGeneral() {
+    public ArrayList<Empleado> ObtenerGeneral() {
+
+        ArrayList<Empleado> empleadoLista = new ArrayList<>();
+        
         String direccion = "C:\\Users\\asant\\OneDrive\\Escritorio\\resultados.txt";
+        String contenido = "";
+        int contador = 0;
+        int c;
+        try {
+            FileReader fr = new FileReader(direccion);
+
+            c = fr.read();
+            while (c != -1) {
+                contenido += (char) c;
+                c = fr.read();
+            }
+
+            fr.close();
+
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        String vector[] = contenido.split(";");
+        
+        empleadoLista.clear();
+        
+        do {
+            empleadoLista.add(new Empleado(Integer.parseInt(vector[contador + 1]), vector[contador + 3], vector[contador + 5], vector[contador + 7], vector[contador + 9], vector[contador + 11], vector[contador + 13], vector[contador + 15], vector[contador + 17]));
+            contador = contador + 18;
+        } while (contador < (vector.length) - 1);
+
+        return empleadoLista;
+
+        /*
+        String direccion = "C:\\Users\\asant\\OneDrive\\Escritorio\\resultados.txt";
+       
+
         String contenido = "";
         int c;
         try {
@@ -86,7 +123,7 @@ public class EmpleadoController {
         } catch (Exception e) {
             System.out.println(e);
         }
-        return contenido;
+        return contenido;*/
     }
 
     @POST
@@ -118,8 +155,33 @@ public class EmpleadoController {
     @PUT
     @Path("/editarEmpleado")
     @Consumes(MediaType.APPLICATION_JSON)   //tipo de consumo(cuerpo JSON)
-    //@Produces(MediaType.APPLICATION_JSON)   //tipo de respuesta
-    public void EditarEmpleado(String nombre) {
+    @Produces(MediaType.APPLICATION_JSON)   //tipo de respuesta
+    public String EditarEmpleado(@PathParam("cedula") String cedula) {
+
+        empleado = guardarArchivoEnArray();
+        String contenido = "";
+        for (Empleado le : empleado) {
+
+            if (le.getCedula().equals(cedula)) {
+
+                contenido = "edad;" + le.getEdad() + ";\n"
+                        + "idEmpresarial;" + le.getIdEmpresarial() + ";\n"
+                        + "cedula;" + le.getCedula() + ";\n"
+                        + "nombre;" + le.getNombre() + ";\n"
+                        + "segundo nombre;" + le.getSegundoNombre() + ";\n"
+                        + "apellido;" + le.getApellido() + ";\n"
+                        + "segundo apellido;" + le.getSegundoApellido() + ";\n"
+                        + "cargo;" + le.getCargo() + ";\n"
+                        + "area;" + le.getArea() + ";\n";
+
+                empleado.clear();
+                return contenido;
+            } else {
+                contenido = "No Registros";
+            }
+        }
+        empleado.clear();
+        return contenido;
 
     }
 

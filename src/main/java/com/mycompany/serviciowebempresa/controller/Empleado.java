@@ -13,15 +13,15 @@ import java.io.Serializable;
  */
 public class Empleado implements Serializable {
 
-    int edad;
-    String idEmpresarial;
-    String cedula;
-    String nombre;
-    String segundoNombre;
-    String apellido;
-    String segundoApellido;
-    String cargo;
-    String area;
+    private int edad;
+    private String idEmpresarial;
+    private String cedula;
+    private String nombre;
+    private String segundoNombre;
+    private String apellido;
+    private String segundoApellido;
+    private String cargo;
+    private String area;
 
     public Empleado() {
     }
