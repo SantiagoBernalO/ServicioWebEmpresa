@@ -17,6 +17,10 @@ import java.util.List;
 
 import javafx.scene.media.Media;
 import javax.ejb.Stateless;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -33,77 +37,91 @@ public class EmpleadoController {
     String direccion = "C:\\Users\\asant\\OneDrive\\Escritorio\\resultados.txt";
 
     @GET
+    //@Valid
     @Path("/obtenerPorId/{Id}")
     @Produces(MediaType.APPLICATION_JSON) //tipo de respuesta
-    public Empleado Obtener(@PathParam("Id") String id) throws IOException {
-        empleado = guardarArchivoEnArray();
-        String contenido = "";
-        Empleado datos = new Empleado();
+    public Response Obtener(/*@NotNull @Size(min = 1, max = 4) @Pattern(regexp = "[0-9]*")*/ @PathParam("Id") String id) throws IOException {
 
-        for (Empleado le : empleado) {
+        /*try {*/
+            empleado = guardarArchivoEnArray();
+            Empleado datos = new Empleado();
 
-            if (le.getIdEmpresarial().equals(id)) {
+            for (Empleado le : empleado) {
 
-                datos.setEdad(le.getEdad());
-                datos.setIdEmpresarial(le.getIdEmpresarial());
-                datos.setCedula(le.getCedula());
-                datos.setNombre(le.getNombre());
-                datos.setSegundoNombre(le.getSegundoNombre());
-                datos.setApellido(le.getApellido());
-                datos.setSegundoApellido(le.getSegundoApellido());
-                datos.setCargo(le.getCargo());
-                datos.setArea(le.getArea());
+                if (le.getIdEmpresarial().equals(id)) {
 
-                empleado.clear();
-                return datos;
-            } else {
-                contenido = "No Registros";
+                    datos.setEdad(le.getEdad());
+                    datos.setIdEmpresarial(le.getIdEmpresarial());
+                    datos.setCedula(le.getCedula());
+                    datos.setNombre(le.getNombre());
+                    datos.setSegundoNombre(le.getSegundoNombre());
+                    datos.setApellido(le.getApellido());
+                    datos.setSegundoApellido(le.getSegundoApellido());
+                    datos.setCargo(le.getCargo());
+                    datos.setArea(le.getArea());
+
+                    empleado.clear();
+
+                    return Response.status(Response.Status.OK).entity(datos).build();
+                } else {
+                    return Response.status(Response.Status.NOT_FOUND).entity("Id empresarial no encontrado!").build();
+                }
             }
-        }
-        empleado.clear();
-        return datos;
+            empleado.clear();
+            return Response.status(Response.Status.OK).entity(datos).build();
+        /*} catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e).build();
+        }*/
     }
 
     @GET
     @Path("/obtenerGeneral")
     @Produces(MediaType.APPLICATION_JSON)   //tipo de respuesta
-    public ArrayList<Empleado> ObtenerGeneral() {
+    public Response ObtenerGeneral() {
 
         ArrayList<Empleado> empleadoLista = new ArrayList<>();
 
-        String contenido = "";
-        int contador = 0;
-        int c;
         try {
-            FileReader fr = new FileReader(direccion);
+            String contenido = "";
+            int contador = 0;
+            int c;
+            try {
+                FileReader fr = new FileReader(direccion);
 
-            c = fr.read();
-            while (c != -1) {
-                contenido += (char) c;
                 c = fr.read();
+                while (c != -1) {
+                    contenido += (char) c;
+                    c = fr.read();
+                }
+
+                fr.close();
+
+            } catch (Exception e) {
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e).build();
             }
+            try {
+                String vector[] = contenido.split(";");
 
-            fr.close();
+                empleadoLista.clear();
 
+                do {
+                    empleadoLista.add(new Empleado(Integer.parseInt(vector[contador + 1]), vector[contador + 3], vector[contador + 5], vector[contador + 7], vector[contador + 9], vector[contador + 11], vector[contador + 13], vector[contador + 15], vector[contador + 17]));
+                    contador = contador + 18;
+                } while (contador < (vector.length) - 1);
+            } catch (Exception e) {
+                return Response.status(Response.Status.NO_CONTENT).entity("No existen elementos. " + e).build();
+            }
+            return Response.status(Response.Status.OK).entity(empleadoLista).build();
         } catch (Exception e) {
-            System.out.println(e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e).build();
         }
-        String vector[] = contenido.split(";");
-
-        empleadoLista.clear();
-
-        do {
-            empleadoLista.add(new Empleado(Integer.parseInt(vector[contador + 1]), vector[contador + 3], vector[contador + 5], vector[contador + 7], vector[contador + 9], vector[contador + 11], vector[contador + 13], vector[contador + 15], vector[contador + 17]));
-            contador = contador + 18;
-        } while (contador < (vector.length) - 1);
-
-        return empleadoLista;
     }
 
     @POST
+    @Valid
     @Path("/insertar")
     @Consumes(MediaType.APPLICATION_JSON)   //tipo de consumo(cuerpo JSON)
-    public void InsertarEmpleado(Empleado datosEmpleado) throws IOException {
+    public Response InsertarEmpleado(@Valid Empleado datosEmpleado) throws IOException {
 
         try {
             FileWriter fw = new FileWriter(direccion, true);
@@ -121,65 +139,82 @@ public class EmpleadoController {
             fw.close();
 
         } catch (Exception e) {
-            System.out.println(e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("2" + e).build();
         }
+
+        return Response.status(Response.Status.OK).entity("Agregado con exito").build();
+
     }
 
     @PUT
+    @Valid
     @Path("/editarEmpleado")
     @Consumes(MediaType.APPLICATION_JSON)   //tipo de consumo(cuerpo JSON)
-    public String EditarEmpleado(Empleado datosEmpleado) throws IOException {
-        empleado = guardarArchivoEnArray();
-        String contenido = "Editado con exito";
-        for (Empleado le : empleado) {
+    public Response EditarEmpleado(@Valid Empleado datosEmpleado) throws IOException {
 
-            if (le.getCedula().equals(datosEmpleado.getCedula())) {
+        try {
+            empleado = guardarArchivoEnArray();
+            String contenido = "Editado con exito";
+            for (Empleado le : empleado) {
 
-                le.setEdad(datosEmpleado.getEdad());
-                le.setIdEmpresarial(datosEmpleado.getIdEmpresarial());
-                le.setCedula(datosEmpleado.getCedula());
-                le.setNombre(datosEmpleado.getNombre());
-                le.setSegundoNombre(datosEmpleado.getSegundoNombre());
-                le.setApellido(datosEmpleado.getApellido());
-                le.setSegundoApellido(datosEmpleado.getSegundoApellido());
-                le.setCargo(datosEmpleado.getCargo());
-                le.setArea(datosEmpleado.getArea());
+                if (le.getCedula().equals(datosEmpleado.getCedula())) {
 
-                File archivo = new File(direccion);
-                archivo.delete();
-                NuevoArchivo(empleado);
+                    le.setEdad(datosEmpleado.getEdad());
+                    le.setIdEmpresarial(datosEmpleado.getIdEmpresarial());
+                    le.setCedula(datosEmpleado.getCedula());
+                    le.setNombre(datosEmpleado.getNombre());
+                    le.setSegundoNombre(datosEmpleado.getSegundoNombre());
+                    le.setApellido(datosEmpleado.getApellido());
+                    le.setSegundoApellido(datosEmpleado.getSegundoApellido());
+                    le.setCargo(datosEmpleado.getCargo());
+                    le.setArea(datosEmpleado.getArea());
 
-                return contenido;
-            } else {
-                contenido = "No Registros";
+                    File archivo = new File(direccion);
+                    archivo.delete();
+                    NuevoArchivo(empleado);
+
+                    return Response.status(Response.Status.CREATED).entity(contenido).build();
+                } else {
+                    contenido = "No Registros";
+                }
             }
+            empleado.clear();
+            //201
+            return Response.status(Response.Status.CREATED).entity(contenido).build();
+        } catch (IOException e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e).build();
         }
-        empleado.clear();
-        return contenido;
-
     }
 
     @DELETE
+    @Valid
     @Path("/eliminarPorId/{id}")
     @Produces(MediaType.APPLICATION_JSON)   //tipo de respuesta
-    public Response eliminarEmpleado(@PathParam("id") String id) throws IOException {
-        //1.guardar todo en una lista
-        empleado = guardarArchivoEnArray();
+    public Response eliminarEmpleado(@NotNull @Size(min = 1, max = 4) @Pattern(regexp = "[0-9]*") @PathParam("id") String id) throws IOException {
 
-        //2.buscar si existe el que se va a eliminar y eliminar del arreglo
-        for (Empleado le : empleado) {
+        try {
+            //1.guardar todo en una lista
+            empleado = guardarArchivoEnArray();
+            //2.buscar si existe el que se va a eliminar y eliminar del arreglo
+            for (Empleado le : empleado) {
 
-            if (le.getIdEmpresarial().equals(id)) {
-                //elimina
-                //System.out.println("se elimina a: " + le.getIdEmpresarial());
-                empleado.remove(le);
-                File archivo = new File(direccion);
-                archivo.delete();
-                NuevoArchivo(empleado);
-                return (Response.noContent().entity("Se elimino correctamente " + id).build());
+                if (le.getIdEmpresarial().equals(id)) {
+                    //elimina
+                    //System.out.println("se elimina a: " + le.getIdEmpresarial());
+                    empleado.remove(le);
+                    File archivo = new File(direccion);
+                    archivo.delete();
+                    NuevoArchivo(empleado);
+                    return (Response.noContent().entity("Se elimino correctamente " + id).build());
+                } else {
+                    return (Response.status(Response.Status.NOT_FOUND).entity("Recurso no encontrado").build());
+                }
             }
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        } catch (IOException e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e).build();
         }
-        return (Response.status(Response.Status.NOT_FOUND).build());
+
     }
 
     public ArrayList guardarArchivoEnArray() {
