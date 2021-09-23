@@ -6,11 +6,6 @@
 package com.mycompany.serviciowebempresa.controller;
 
 import java.io.Serializable;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
 
 /**
  *
@@ -18,42 +13,14 @@ import javax.validation.constraints.Size;
  */
 public class Empleado implements Serializable {
 
-    
-    @NotNull
-    @Max(120)
-    @Min(18)
     private int edad;
-    @NotNull
-    @Size(min = 1, max = 4)
-    @Pattern(regexp = "[0-9]*")
     private String idEmpresarial;
-    @NotNull
-    @Size(min = 6, max = 11)
-    @Pattern(regexp = "[0-9]*")
     private String cedula;
-    @NotNull
-    @Size(min = 2, max = 15)
-    @Pattern(regexp = "[a-zA-Z]*")
     private String nombre;
-    @NotNull
-    @Size(min = 2, max = 15)
-    @Pattern(regexp = "[a-zA-Z]*")
     private String segundoNombre;
-    @NotNull
-    @Size(min = 2, max = 18)
-    @Pattern(regexp = "[a-zA-Z]*")
     private String apellido;
-    @NotNull
-    @Size(min = 2, max = 18)
-    @Pattern(regexp = "[a-zA-Z]*")
     private String segundoApellido;
-    @NotNull
-    @Size(min = 2, max = 25)
-    @Pattern(regexp = "[a-zA-Z]*")
     private String cargo;
-    @NotNull
-    @Size(min = 2, max = 25)
-    @Pattern(regexp = "[a-zA-Z]*")
     private String area;
 
     public Empleado() {
@@ -151,8 +118,8 @@ public class Empleado implements Serializable {
     /**
      * @param apellido the apellido to set
      */
-    public void setApellido(String apellido) {
-        this.apellido = apellido;
+    public void setApellido(String Apellido) {
+        this.apellido = Apellido;
     }
 
     /**
@@ -179,8 +146,8 @@ public class Empleado implements Serializable {
     /**
      * @param cargo the cargo to set
      */
-    public void setCargo(String cargo) {
-        this.cargo = cargo;
+    public void setCargo(String Cargo) {
+        this.cargo = Cargo;
     }
 
     /**
@@ -191,9 +158,9 @@ public class Empleado implements Serializable {
     }
 
     /**
-     * @param area the area to set
+     * @param segundoNombre the segundoNombre to set
      */
-    public void setArea(String area) {
-        this.area = area;
+    public void setArea(String Area) {
+        this.area = Area;
     }
 }
