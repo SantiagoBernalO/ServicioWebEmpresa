@@ -17,6 +17,7 @@ import java.util.List;
 
 import javafx.scene.media.Media;
 import javax.ejb.Stateless;
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
@@ -50,9 +51,8 @@ public class EmpleadoController {
     @GET
     @Path("/obtenerPorId/{Id}")
     @Produces(MediaType.APPLICATION_JSON) //tipo de respuesta
-    public Empleado Obtener(@NotNull @Size(min = 1, max = 4) @Pattern(regexp = "[0-9]*") @PathParam("Id") String id) throws IOException {
+    public Response Obtener(@NotNull @Size(min = 1, max = 4) @Pattern(regexp = "[0-9]*") @PathParam("Id") String id) throws IOException {
         empleado = guardarArchivoEnArray();
-        String contenido = "";
         Empleado datos = new Empleado();
 
         for (Empleado le : empleado) {
@@ -70,13 +70,10 @@ public class EmpleadoController {
                 datos.setArea(le.getArea());
 
                 empleado.clear();
-                return datos;
-            } else {
-                contenido = "No Registros";
+                return Response.status(Response.Status.OK).entity(datos).build();
             }
         }
-        empleado.clear();
-        return datos;
+        return Response.status(Response.Status.NOT_FOUND).entity("Identificador no encontrado").build();
     }
 
     /**
@@ -125,30 +122,38 @@ public class EmpleadoController {
      * Permite insertar un empleado en el fichero
      *
      * @param datosEmpleado
+     * @return 
      * @throws IOException
      */
     @POST
+    @Valid
     @Path("/insertar")
     @Consumes(MediaType.APPLICATION_JSON)   //tipo de consumo(cuerpo JSON)
-    public Response InsertarEmpleado(Empleado datosEmpleado) throws IOException {
+    public Response InsertarEmpleado(@Valid Empleado datosEmpleado) throws IOException {
 
-        try {
-            FileWriter fw = new FileWriter(direccion, true);
+        boolean verificarRepetidos = verificarRepetidos(datosEmpleado.getCedula());
 
-            fw.write("edad;" + datosEmpleado.getEdad() + ";\n"
-                    + "idEmpresarial;" + datosEmpleado.getIdEmpresarial() + ";\n"
-                    + "cedula;" + datosEmpleado.getCedula() + ";\n"
-                    + "nombre;" + datosEmpleado.getNombre() + ";\n"
-                    + "segundo nombre;" + datosEmpleado.getSegundoNombre() + ";\n"
-                    + "apellido;" + datosEmpleado.getApellido() + ";\n"
-                    + "segundo apellido;" + datosEmpleado.getSegundoApellido() + ";\n"
-                    + "cargo;" + datosEmpleado.getCargo() + ";\n"
-                    + "area;" + datosEmpleado.getArea() + ";\n");
+        if (verificarRepetidos == true) {
+            return Response.status(Response.Status.CONFLICT).entity("No es posible agregar por que ya existe esya cedula").build();
+        } else {
+            try {
+                FileWriter fw = new FileWriter(direccion, true);
 
-            fw.close();
-            return Response.status(Response.Status.OK).entity("Agregado con exito").build();
-        } catch (Exception e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e).build();
+                fw.write("edad;" + datosEmpleado.getEdad() + ";\n"
+                        + "idEmpresarial;" + datosEmpleado.getIdEmpresarial() + ";\n"
+                        + "cedula;" + datosEmpleado.getCedula() + ";\n"
+                        + "nombre;" + datosEmpleado.getNombre() + ";\n"
+                        + "segundo nombre;" + datosEmpleado.getSegundoNombre() + ";\n"
+                        + "apellido;" + datosEmpleado.getApellido() + ";\n"
+                        + "segundo apellido;" + datosEmpleado.getSegundoApellido() + ";\n"
+                        + "cargo;" + datosEmpleado.getCargo() + ";\n"
+                        + "area;" + datosEmpleado.getArea() + ";\n");
+
+                fw.close();
+                return Response.status(Response.Status.OK).entity("Agregado con exito").build();
+            } catch (Exception e) {
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e).build();
+            }
         }
     }
 
@@ -160,9 +165,10 @@ public class EmpleadoController {
      * @throws IOException
      */
     @PUT
+    @Valid
     @Path("/editarEmpleado") //POR CEDULA
     @Consumes(MediaType.APPLICATION_JSON)   //tipo de consumo(cuerpo JSON)
-    public String EditarEmpleado(Empleado datosEmpleado) throws IOException {
+    public Response EditarEmpleado(@Valid Empleado datosEmpleado) throws IOException {
         empleado = guardarArchivoEnArray();
         String contenido = "Editado con exito";
         for (Empleado le : empleado) {
@@ -185,13 +191,11 @@ public class EmpleadoController {
                 archivo.delete();
                 NuevoArchivo(empleado);
 
-                return contenido;
-            } else {
-                contenido = "No Registros";
+                return Response.ok().entity("Editado con exito").build();
             }
         }
         empleado.clear();
-        return contenido;
+        return Response.status(Response.Status.NOT_FOUND).entity("Registro no encontrado ").build();
 
     }
 
@@ -291,6 +295,31 @@ public class EmpleadoController {
         }
 
         empleado.clear();
+    }
+
+    /**
+     * Permite verificar si hay elementos iguales a la cedula recibida en el archivo de texto plano
+     * @param cedula
+     * @return 
+     */
+    
+    public Boolean verificarRepetidos(String cedula) {
+
+        boolean banderaExistencia = false;
+        empleado = guardarArchivoEnArray();
+
+        for (Empleado le : empleado) {
+
+            if (le.getCedula().equals(cedula)) {
+                banderaExistencia = true;
+            } else {
+                banderaExistencia = false;
+            }
+        }
+
+        empleado.clear();
+
+        return banderaExistencia;
     }
 
 }
