@@ -122,7 +122,7 @@ public class EmpleadoController {
      * Permite insertar un empleado en el fichero
      *
      * @param datosEmpleado
-     * @return 
+     * @return
      * @throws IOException
      */
     @POST
@@ -223,9 +223,11 @@ public class EmpleadoController {
                 File archivo = new File(direccion);
                 archivo.delete();
                 NuevoArchivo(empleado);
+                empleado.clear();
                 return (Response.noContent().entity("Se elimino correctamente " + id).build());
             }
         }
+        empleado.clear();
         return (Response.status(Response.Status.NOT_FOUND).build());
     }
 
@@ -298,26 +300,32 @@ public class EmpleadoController {
     }
 
     /**
-     * Permite verificar si hay elementos iguales a la cedula recibida en el archivo de texto plano
+     * Permite verificar si hay elementos iguales a la cedula recibida en el
+     * archivo de texto plano
+     *
      * @param cedula
-     * @return 
+     * @return
      */
-    
     public Boolean verificarRepetidos(String cedula) {
 
         boolean banderaExistencia = false;
-        empleado = guardarArchivoEnArray();
 
-        for (Empleado le : empleado) {
+        try {
+            empleado = guardarArchivoEnArray();
 
-            if (le.getCedula().equals(cedula)) {
-                banderaExistencia = true;
-            } else {
-                banderaExistencia = false;
+            for (Empleado le : empleado) {
+
+                if (le.getCedula().equals(cedula)) {
+                    banderaExistencia = true;
+                } else {
+                    banderaExistencia = false;
+                }
             }
-        }
 
-        empleado.clear();
+            empleado.clear();
+        } catch (Exception e) {
+            banderaExistencia = false;
+        }
 
         return banderaExistencia;
     }
